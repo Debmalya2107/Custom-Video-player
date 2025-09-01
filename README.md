@@ -1,7 +1,7 @@
 # 🎬 Custom Video Player Website
 
 A **custom-built video player website** that enhances the traditional HTML5 video player with interactive controls, custom styling, and JavaScript-powered features for a better user experience.
-
+Live Demo -  https://debmalya2107.github.io/Custom-Video-player/
 ---
 
 ## ✨ Features
