@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Video Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+         background: linear-gradient(180deg, rgb(60, 54, 119) 0.00%, rgb(66, 6, 9) 80.09%, rgb(243, 8, 8) 100.00%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .video-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 800px;
+            transition: all 0.3s ease;
+        }
+
+        .upload-section {
+            padding: 40px;
+            text-align: center;
+           background: linear-gradient(225deg, rgb(65, 80, 95) 0.00%, rgb(36, 37, 38) 100.00%);
+            color: white;
+        }
+
+        .upload-section h1 {
+            margin-bottom: 20px;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+
+        .upload-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .upload-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .upload-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .player-section {
+            display: none;
+            position: relative;
+        }
+
+        .video-wrapper {
+            position: relative;
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+            border-radius: 0 0 20px 20px;
+        }
+
+        .controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .video-wrapper:hover .controls {
+            opacity: 1;
+        }
+
+        .play-btn {
+            background: #9b584d;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2em;
+            transition: all 0.3s ease;
+        }
+
+        .play-btn:hover {
+           background: linear-gradient(132deg, rgb(7, 5, 8) 0.00%, rgb(247, 9, 9) 100.00%);
+            transform: scale(1.1);
+        }
+
+        .progress-container {
+            flex: 1;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(132deg, rgb(7, 5, 8) 0.00%, rgb(247, 9, 9) 100.00%);
+            border-radius: 4px;
+            width: 0%;
+        }
+
+        .time-display {
+            color: white;
+            font-size: 0.9em;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+        }
+
+        .volume-slider {
+            width: 80px;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        .volume-level {
+            height: 100%;
+            background: linear-gradient(132deg, rgb(7, 5, 8) 0.00%, rgb(247, 9, 9) 100.00%);
+            border-radius: 3px;
+            width: 100%;
+        }
+
+        .fullscreen-btn {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2em;
+            padding: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .fullscreen-btn:hover {
+            color: #f50d0d;
+        }
+
+        .video-info {
+            padding: 20px;
+            text-align: center;
+            color: #333;
+        }
+
+        .video-info h2 {
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                padding: 15px;
+                gap: 10px;
+            }
+            
+            .volume-slider {
+                width: 60px;
+            }
+            
+            .time-display {
+                min-width: 60px;
+                font-size: 0.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="video-container">
+        <div class="upload-section" id="uploadSection">
+            <h1>Custom Video Player</h1>
+            <div class="upload-btn" id="uploadBtn">
+                <div class="upload-icon">📁</div>
+                <p>Click to upload a video file</p>
+                <p style="font-size: 0.9em; opacity: 0.8;">Supported formats: MP4, WebM, OGG</p>
+            </div>
+            <input type="file" id="fileInput" class="file-input" accept="video/*">
+        </div>
+
+        <div class="player-section" id="playerSection">
+            <div class="video-wrapper">
+                <video id="videoPlayer"></video>
+                <div class="controls">
+                    <button class="play-btn" id="playBtn">▶</button>
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar" id="progressBar"></div>
+                    </div>
+                    <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+                    <div class="volume-control">
+                        <span>🔊</span>
+                        <div class="volume-slider" id="volumeSlider">
+                            <div class="volume-level" id="volumeLevel"></div>
+                        </div>
+                    </div>
+                    <button class="fullscreen-btn" id="fullscreenBtn">⛶</button>
+                </div>
+            </div>
+            <div class="video-info" id="videoInfo">
+                <h2>Your Video</h2>
+                <p class="file-size" id="fileSize">0 MB</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadBtn = document.getElementById('uploadBtn');
+            const fileInput = document.getElementById('fileInput');
+            const uploadSection = document.getElementById('uploadSection');
+            const playerSection = document.getElementById('playerSection');
+            const videoPlayer = document.getElementById('videoPlayer');
+            const playBtn = document.getElementById('playBtn');
+            const progressBar = document.getElementById('progressBar');
+            const progressContainer = document.getElementById('progressContainer');
+            const timeDisplay = document.getElementById('timeDisplay');
+            const volumeSlider = document.getElementById('volumeSlider');
+            const volumeLevel = document.getElementById('volumeLevel');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const videoInfo = document.getElementById('videoInfo');
+            const fileSize = document.getElementById('fileSize');
+
+            let isPlaying = false;
+            let isDragging = false;
+
+            // Upload functionality
+            uploadBtn.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file && file.type.startsWith('video/')) {
+                    const fileURL = URL.createObjectURL(file);
+                    videoPlayer.src = fileURL;
+                    
+                    // Calculate file size
+                    const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
+                    fileSize.textContent = `${sizeInMB} MB`;
+                    
+                    // Update video title
+                    videoInfo.querySelector('h2').textContent = file.name;
+                    
+                    // Show player section
+                    uploadSection.style.display = 'none';
+                    playerSection.style.display = 'block';
+                    
+                    // Load video metadata
+                    videoPlayer.addEventListener('loadedmetadata', () => {
+                        updateTimeDisplay();
+                    });
+                }
+            });
+
+            // Play/Pause functionality
+            playBtn.addEventListener('click', togglePlay);
+            videoPlayer.addEventListener('click', togglePlay);
+
+            function togglePlay() {
+                if (videoPlayer.paused || videoPlayer.ended) {
+                    videoPlayer.play();
+                    playBtn.textContent = '❚❚';
+                    isPlaying = true;
+                } else {
+                    videoPlayer.pause();
+                    playBtn.textContent = '▶';
+                    isPlaying = false;
+                }
+            }
+
+            // Progress bar functionality
+            videoPlayer.addEventListener('timeupdate', updateProgress);
+            
+            progressContainer.addEventListener('click', (e) => {
+                if (!isDragging) {
+                    const rect = progressContainer.getBoundingClientRect();
+                    const percent = (e.clientX - rect.left) / rect.width;
+                    videoPlayer.currentTime = percent * videoPlayer.duration;
+                }
+            });
+
+            progressContainer.addEventListener('mousedown', () => {
+                isDragging = true;
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            progressContainer.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const rect = progressContainer.getBoundingClientRect();
+                    const percent = (e.clientX - rect.left) / rect.width;
+                    videoPlayer.currentTime = percent * videoPlayer.duration;
+                }
+            });
+
+            function updateProgress() {
+                const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+                progressBar.style.width = percent + '%';
+                updateTimeDisplay();
+            }
+
+            function updateTimeDisplay() {
+                const currentTime = formatTime(videoPlayer.currentTime);
+                const duration = formatTime(videoPlayer.duration || 0);
+                timeDisplay.textContent = `${currentTime} / ${duration}`;
+            }
+
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            // Volume control
+            volumeSlider.addEventListener('click', (e) => {
+                const rect = volumeSlider.getBoundingClientRect();
+                const volume = (e.clientX - rect.left) / rect.width;
+                videoPlayer.volume = volume;
+                volumeLevel.style.width = (volume * 100) + '%';
+            });
+
+            // Fullscreen functionality
+            fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    videoPlayer.requestFullscreen().catch(err => {
+                        console.error('Error attempting to enable fullscreen:', err);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            }
+
+            // Keyboard controls
+            document.addEventListener('keydown', (e) => {
+                if (playerSection.style.display === 'block') {
+                    switch(e.key) {
+                        case ' ':
+                        case 'k':
+                            e.preventDefault();
+                            togglePlay();
+                            break;
+                        case 'f':
+                            toggleFullscreen();
+                            break;
+                        case 'm':
+                            videoPlayer.muted = !videoPlayer.muted;
+                            break;
+                        case 'ArrowRight':
+                            videoPlayer.currentTime += 10;
+                            break;
+                        case 'ArrowLeft':
+                            videoPlayer.currentTime -= 10;
+                            break;
+                        case 'ArrowUp':
+                            videoPlayer.volume = Math.min(videoPlayer.volume + 0.1, 1);
+                            volumeLevel.style.width = (videoPlayer.volume * 100) + '%';
+                            break;
+                        case 'ArrowDown':
+                            videoPlayer.volume = Math.max(videoPlayer.volume - 0.1, 0);
+                            volumeLevel.style.width = (videoPlayer.volume * 100) + '%';
+                            break;
+                    }
+                }
+            });
+
+            // Video ended event
+            videoPlayer.addEventListener('ended', () => {
+                playBtn.textContent = '▶';
+                isPlaying = false;
+                videoPlayer.currentTime = 0;
+            });
+        });
+    </script>
+</body>
+</html>
